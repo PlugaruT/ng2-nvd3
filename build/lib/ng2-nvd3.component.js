@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = require("@angular/core");
+var constants_1 = require("./constants");
 var d3 = require("d3");
 var nv = require("nvd3");
 var NvD3Component = (function () {
@@ -13,7 +14,9 @@ var NvD3Component = (function () {
                 this.initChart(this.options);
             }
             else {
-                this.updateWithOptions(this.options);
+                if (this.options) {
+                    this.updateWithOptions(this.options);
+                }
             }
         }
     };
@@ -32,8 +35,9 @@ var NvD3Component = (function () {
         nv.addGraph(function () {
             if (!_this.chart)
                 return;
-            if (_this.chart.resizeHandler)
+            if (_this.chart.resizeHandler) {
                 _this.chart.resizeHandler.clear();
+            }
             _this.chart.resizeHandler = nv.utils.windowResize(function () {
                 _this.chart && _this.chart.update && _this.chart.update();
             });
@@ -41,76 +45,20 @@ var NvD3Component = (function () {
         }, options.chart['callback']);
     };
     NvD3Component.prototype.updateWithOptions = function (options) {
-        if (!options)
-            return;
         for (var key in this.chart) {
             if (!this.chart.hasOwnProperty(key))
                 continue;
-            var value = this.chart[key];
-            if (key[0] === '_') { }
-            else if ([
-                'clearHighlights',
-                'highlightPoint',
-                'id',
-                'options',
-                'resizeHandler',
-                'state',
-                'open',
-                'close',
-                'tooltipContent'
-            ].indexOf(key) >= 0) { }
-            else if (key === 'dispatch')
-                this.configureEvents(this.chart[key], options.chart[key]);
-            else if ([
-                'bars',
-                'bars1',
-                'bars2',
-                'boxplot',
-                'bullet',
-                'controls',
-                'discretebar',
-                'distX',
-                'distY',
-                'focus',
-                'interactiveLayer',
-                'legend',
-                'lines',
-                'lines1',
-                'lines2',
-                'multibar',
-                'pie',
-                'scatter',
-                'scatters1',
-                'scatters2',
-                'sparkline',
-                'stack1',
-                'stack2',
-                'sunburst',
-                'tooltip',
-                'x2Axis',
-                'xAxis',
-                'y1Axis',
-                'y2Axis',
-                'y3Axis',
-                'y4Axis',
-                'yAxis',
-                'yAxis1',
-                'yAxis2',
-                'sankeyChart'
-            ].indexOf(key) >= 0 ||
-                (key === 'stacked' && options.chart.type === 'stackedAreaChart')) {
-                this.configure(this.chart[key], options.chart[key], options.chart.type);
+            if (key[0] !== '_' && (constants_1.IGNORED_OPTIONS.indexOf(key) >= 0) && options.chart[key]) {
+                if (key === 'dispatch') {
+                    this.configureEvents(this.chart[key], options.chart[key]);
+                }
+                else if (constants_1.NV_COMPONENS.indexOf(key) >= 0 || (key === 'stacked' && this.chartType === 'stackedAreaChart')) {
+                    this.configure(this.chart[key], options.chart[key], this.chartType);
+                }
+                else {
+                    this.chart[key](options.chart[key]);
+                }
             }
-            else if ((key === 'xTickFormat' || key === 'yTickFormat') && options.chart.type === 'lineWithFocusChart') {
-            }
-            else if ((key === 'tooltips') && options.chart.type === 'boxPlotChart') {
-            }
-            else if ((key === 'tooltipXContent' || key === 'tooltipYContent') && options.chart.type === 'scatterChart') {
-            }
-            else if (options.chart[key] === undefined || options.chart[key] === null) {
-            }
-            else
-                this.chart[key](options.chart[key]);
         }
         this.updateWithData(this.data);
     };
@@ -133,13 +81,16 @@ var NvD3Component = (function () {
         if (this.svg) {
             var h = void 0, w = void 0;
             if (h = this.options.chart.height) {
-                if (!isNaN(+h))
+                if (!isNaN(+h)) {
                     h += 'px';
+                }
+                ;
                 this.svg.attr('height', h).style({ height: h });
             }
             if (w = this.options.chart.width) {
-                if (!isNaN(+w))
+                if (!isNaN(+w)) {
                     w += 'px';
+                }
                 this.svg.attr('width', w).style({ width: w });
             }
             else {
@@ -155,15 +106,19 @@ var NvD3Component = (function () {
                 var value = chart[key];
                 if (key[0] === '_') {
                 }
-                else if (key === 'dispatch')
+                else if (key === 'dispatch') {
                     this.configureEvents(value, options[key]);
-                else if (key === 'tooltip')
-                    this.configure(chart[key], options[key], chartType);
-                else if (key === 'contentGenerator') {
-                    if (options[key])
-                        chart[key](options[key]);
                 }
-                else if ([
+                else if (key === 'tooltip') {
+                    this.configure(value, options[key], chartType);
+                }
+                else if (key === 'contentGenerator') {
+                    if (options[key]) {
+                        value(options[key]);
+                    }
+                    ;
+                }
+                else if (([
                     'axis',
                     'clearHighlights',
                     'defined',
@@ -175,11 +130,8 @@ var NvD3Component = (function () {
                     'scatter',
                     'open',
                     'close'
-                ].indexOf(key) === -1) {
-                    if (options[key] === undefined || options[key] === null) {
-                    }
-                    else
-                        chart[key](options[key]);
+                ].indexOf(key) === -1) && options[key]) {
+                    value(options[key]);
                 }
             }
         }
@@ -187,13 +139,9 @@ var NvD3Component = (function () {
     NvD3Component.prototype.configureEvents = function (dispatch, options) {
         if (dispatch && options) {
             for (var key in dispatch) {
-                if (!dispatch.hasOwnProperty(key))
-                    continue;
-                var value = dispatch[key];
-                if (options[key] === undefined || options[key] === null) {
-                }
-                else
+                if (dispatch.hasOwnProperty(key) && options[key]) {
                     dispatch.on(key + '._', options[key]);
+                }
             }
         }
     };
@@ -212,8 +160,9 @@ var NvD3Component = (function () {
         if (nv.tooltip && nv.tooltip.cleanup) {
             nv.tooltip.cleanup();
         }
-        if (this.chart && this.chart.resizeHandler)
+        if (this.chart && this.chart.resizeHandler) {
             this.chart.resizeHandler.clear();
+        }
         this.chart = null;
     };
     return NvD3Component;
