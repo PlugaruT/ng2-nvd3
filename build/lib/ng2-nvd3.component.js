@@ -48,7 +48,7 @@ var NvD3Component = (function () {
         for (var key in this.chart) {
             if (!this.chart.hasOwnProperty(key))
                 continue;
-            if (key[0] !== '_' && (constants_1.IGNORED_OPTIONS.indexOf(key) >= 0) && options.chart[key]) {
+            if (key[0] !== '_' && (constants_1.IGNORED_OPTIONS.indexOf(key) < 0) && options.chart[key]) {
                 if (key === 'dispatch') {
                     this.configureEvents(this.chart[key], options.chart[key]);
                 }
@@ -64,14 +64,12 @@ var NvD3Component = (function () {
     };
     NvD3Component.prototype.updateWithData = function (data) {
         if (data) {
-            {
-                var svgElement = this.el.querySelector('svg');
-                if (!svgElement) {
-                    this.svg = d3.select(this.el).append('svg');
-                }
-                else {
-                    this.svg = d3.select(svgElement);
-                }
+            var svgElement = this.el.querySelector('svg');
+            if (!svgElement) {
+                this.svg = d3.select(this.el).append('svg');
+            }
+            else {
+                this.svg = d3.select(svgElement);
             }
             this.updateSize();
             this.svg.datum(data).call(this.chart);
