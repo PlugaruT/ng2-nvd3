@@ -146,6 +146,7 @@ var NvD3Component = (function () {
     NvD3Component.prototype.clearElement = function () {
         this.el.innerHTML = '';
         if (this.chart && this.chart.tooltip && this.chart.tooltip.id) {
+            d3.selectAll('.nvtooltip').remove();
             d3.select('#' + this.chart.tooltip.id()).remove();
         }
         if (nv['graphs'] && this.chart) {

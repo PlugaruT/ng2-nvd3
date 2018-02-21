@@ -203,6 +203,7 @@ export class NvD3Component implements OnChanges, OnDestroy {
 
     // remove tooltip if exists
     if (this.chart && this.chart.tooltip && this.chart.tooltip.id) {
+      d3.selectAll('.nvtooltip').remove();
       d3.select('#' + this.chart.tooltip.id()).remove();
     }
 
